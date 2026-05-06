@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Script from 'next/script';
 import { useSmokingAreas } from '@/hooks/useSmokingAreas';
 import { SmokingArea } from '@/types/smoking';
 
@@ -47,6 +48,7 @@ export default function KakaoMap() {
         });
       }
     });
+    
   }, [isLoaded]);
 
   // 🔥 3. 마커 생성 및 클릭 이벤트 등록
@@ -75,7 +77,12 @@ export default function KakaoMap() {
 
   return (
     <div style={{ position: 'relative' }}>
-      <div ref={mapContainerRef} style={{ width: '60vw', height: '80vh' }} />
+      <Script
+      src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_KEY}&autoload=false`}
+      onLoad={() => setIsLoaded(true)} // 스크립트 로드 완료 시 상태 변경
+      strategy="afterInteractive" // 인터랙티브한 시점에 로드
+    />
+      <div ref={mapContainerRef} style={{ width: '80vw', height: '90dvh' }} />
       
       {/* 상세 정보 오버레이 (간단한 예시) */}
       {selectedArea && (
@@ -91,7 +98,7 @@ export default function KakaoMap() {
           boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
           width: '300px'
         }}>
-          <h3>{selectedArea.name}</h3>
+          <h3>{selectedArea.status}</h3>
           <p>{selectedArea.address}</p>
           <button onClick={() => setSelectedArea(null)}>닫기</button>
         </div>
