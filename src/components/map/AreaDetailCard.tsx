@@ -57,7 +57,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
             className="flex-1 py-2.5 bg-yellow-400 rounded-xl text-sm font-bold text-center"
             onClick={(e) => {
               e.stopPropagation();
-              window.open(`https://map.kakao.com/link/to/${area.name || area.address},${area.lat},${area.lng}`);
+              window.open(`https://map.kakao.com/link/to/${encodeURIComponent(area.address || area.name)},${area.lat},${area.lng}`);
             }}
           >
             길찾기
@@ -141,7 +141,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
           className="w-full py-3.5 bg-yellow-400 hover:bg-yellow-500 rounded-xl text-base font-bold transition-colors"
           onClick={() =>
             window.open(
-              `https://map.kakao.com/link/to/${area.name},${area.lat},${area.lng}`,
+              `https://map.kakao.com/link/to/${encodeURIComponent(area.address || area.name)},${area.lat},${area.lng}`,
             )
           }
         >
