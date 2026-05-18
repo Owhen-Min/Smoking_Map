@@ -3,6 +3,7 @@ export type SmokingArea = {
   name: string;
   lat: number;
   lng: number;
+  last_updated_at: Date;
   source: 'public' | 'user';
   accuracy: 'high' | 'medium' | 'low';
   status: 'pending' | 'approved' | 'rejected';

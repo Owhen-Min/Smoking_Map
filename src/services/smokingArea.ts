@@ -1,16 +1,12 @@
-import { supabase } from '@/lib/supabase';
 import { SmokingArea } from '@/types/smoking';
 
 export async function fetchSmokingAreas(): Promise<SmokingArea[]> {
-  const { data, error } = await supabase
-    .from('smoking_areas')
-    .select(`
-      *,
-      smoking_area_images (*)
-    `)
-    .eq('status', 'approved');
+  const response = await fetch('/api/smoking-areas');
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch smoking areas');
+  }
 
-  if (error) throw error;
-
+  const data = await response.json();
   return data;
 }
