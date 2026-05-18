@@ -1,22 +1,65 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* 바탕색 (Light) - 눈이 편안한 아주 옅은 회백색 */
+  --background: #f4f4f5;
+  /* zinc-100 */
+  /* 카드 및 컴포넌트 배경색 (Light) */
+  --surface: #ffffff;
+  /* 기본 텍스트 (Light) */
+  --foreground: #18181b;
+  /* zinc-900 */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* 메인 컬러: 카카오 옐로우(#FEE500)와 대비되며 신뢰감을 주는 모던한 블루 */
+  --primary: #2563eb;
+  /* blue-600 */
+
+  /* 카카오 옐로우 (버튼, 강조 등) */
+  --kakao-yellow: #fee500;
+  --kakao-text: #000000;
+
+  /* 서브/보색 (강조, 경고, 신고용) - 생동감 있는 레드/코랄 */
+  --danger: #ef4444;
+  /* red-500 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* 바탕색 (Dark) - 완전 블랙이 아닌 고급스러운 다크 그레이 */
+    --background: #09090b;
+    /* zinc-950 */
+    /* 카드 및 컴포넌트 배경색 (Dark) */
+    --surface: #18181b;
+    /* zinc-900 */
+    /* 기본 텍스트 (Dark) */
+    --foreground: #fafafa;
+    /* zinc-50 */
+
+    /* 다크모드에서는 메인 컬러를 살짝 밝게 */
+    --primary: #3b82f6;
+    /* blue-500 */
+
+    /* 다크모드에서도 카카오 옐로우는 유지 (가시성 매우 좋음) */
+    --kakao-yellow: #fee500;
+    --kakao-text: #000000;
+
+    /* 서브/보색 (Dark) */
+    --danger: #f87171;
+    /* red-400 */
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-kakao: var(--kakao-yellow);
+  --color-kakao-text: var(--kakao-text);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {

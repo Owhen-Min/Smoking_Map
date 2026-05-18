@@ -18,10 +18,10 @@ export default function AreaDetailCard({ area, onClose }: Props) {
   if (!isExpanded) {
     return (
       <div
-        className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-white rounded-2xl shadow-xl z-20 p-4 transition-all duration-300 cursor-pointer"
+        className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-20 p-4 transition-all duration-300 cursor-pointer"
         onClick={() => setIsExpanded(true)}
       >
-        <div className="h-48 bg-gray-200 relative hidden md:block">
+        <div className="h-48 bg-foreground/10 relative hidden md:block">
           {area.smoking_area_images && area.smoking_area_images.length > 0 ? (
             <img
               src={area.smoking_area_images[0].image_url}
@@ -29,7 +29,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-gray-400">
+            <div className="flex flex-col items-center justify-center h-full text-foreground/50">
               <span className="text-2xl mb-2">📸</span>
               <span className="text-sm">등록된 사진이 없습니다</span>
             </div>
@@ -37,33 +37,33 @@ export default function AreaDetailCard({ area, onClose }: Props) {
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onClose(); }}
-          className="absolute top-4 right-5 text-gray-400 hover:text-gray-600 p-1"
+          className="absolute top-4 right-5 text-foreground/50 hover:text-foreground p-1 transition-colors"
         >
           ✕
         </button>
         <div className="pr-6 mb-3">
-          <h3 className="font-bold text-gray-800 text-lg truncate">{area.name}</h3>
+          <h3 className="font-bold text-foreground text-lg truncate">{area.name}</h3>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded font-medium">
+            <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">
               최근 확인: {formattedDate}
             </span>
-            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+            <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/70 rounded">
               {area.source === "public" ? "공공" : "제보"}
             </span>
           </div>
         </div>
         <div className="flex gap-2">
           <button
-            className="flex-1 py-2.5 bg-yellow-400 rounded-xl text-sm font-bold text-center"
+            className="flex-1 py-2.5 bg-kakao text-kakao-text rounded-xl text-sm font-bold text-center hover:brightness-95 transition-all"
             onClick={(e) => {
               e.stopPropagation();
-              window.open(`https://map.kakao.com/link/to/${area.name || area.address},${area.lat},${area.lng}`);
+              window.open(`https://map.kakao.com/link/to/${encodeURIComponent(area.address || area.name)},${area.lat},${area.lng}`);
             }}
           >
             길찾기
           </button>
           <button
-            className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-bold text-gray-700 text-center transition-colors"
+            className="flex-1 py-2.5 bg-foreground/5 hover:bg-foreground/10 rounded-xl text-sm font-bold text-foreground text-center transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               setIsExpanded(true);
@@ -78,9 +78,9 @@ export default function AreaDetailCard({ area, onClose }: Props) {
 
   // 2. 확장된 상태 (상세 정보)
   return (
-    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-white rounded-2xl shadow-xl z-20 overflow-hidden transition-all duration-300">
+    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-20 overflow-hidden transition-all duration-300">
       {/* 이미지 영역 */}
-      <div className="h-48 bg-gray-200 relative">
+      <div className="h-48 bg-foreground/10 relative">
         {area.smoking_area_images && area.smoking_area_images.length > 0 ? (
           <img
             src={area.smoking_area_images[0].image_url}
@@ -88,7 +88,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400">
+          <div className="flex flex-col items-center justify-center h-full text-foreground/50">
             <span className="text-2xl mb-2">📸</span>
             <span className="text-sm">등록된 사진이 없습니다</span>
           </div>
@@ -109,39 +109,39 @@ export default function AreaDetailCard({ area, onClose }: Props) {
 
       {/* 정보 영역 */}
       <div className="p-5">
-        <h3 className="font-bold text-gray-800 text-xl mb-2">{area.description || area.name}</h3>
+        <h3 className="font-bold text-foreground text-xl mb-2">{area.description || area.name}</h3>
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
+          <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">
             {area.source === "public" ? "공공" : "제보"}
           </span>
-          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
+          <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">
             최근 확인: {formattedDate}
           </span>
         </div>
 
         {area.address && (
-          <p className="text-sm text-gray-600 mb-6 bg-gray-50 p-3 rounded-lg">
+          <p className="text-sm text-foreground/80 mb-6 bg-background p-3 rounded-lg">
             {area.address}
           </p>
         )}
 
         {/* 버튼 그룹 */}
         <div className="grid grid-cols-3 gap-2 mb-2">
-          <button className="py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-medium transition-colors">
+          <button className="py-2.5 bg-foreground/5 hover:bg-foreground/10 text-foreground rounded-xl text-sm font-medium transition-colors">
             📷 사진 등록
           </button>
-          <button className="py-2.5 bg-gray-100 hover:bg-blue-50 rounded-xl text-sm font-medium text-blue-500 transition-colors">
+          <button className="py-2.5 bg-foreground/5 hover:bg-primary/10 rounded-xl text-sm font-medium text-primary transition-colors">
             📌 위치 수정
           </button>
-          <button className="py-2.5 bg-gray-100 hover:bg-red-50 rounded-xl text-sm font-medium text-red-500 transition-colors">
+          <button className="py-2.5 bg-foreground/5 hover:bg-danger/10 rounded-xl text-sm font-medium text-danger transition-colors">
             🚨 제거 요청
           </button>
         </div>
         <button
-          className="w-full py-3.5 bg-yellow-400 hover:bg-yellow-500 rounded-xl text-base font-bold transition-colors"
+          className="w-full py-3.5 bg-kakao hover:brightness-95 text-kakao-text rounded-xl text-base font-bold transition-all"
           onClick={() =>
             window.open(
-              `https://map.kakao.com/link/to/${area.name},${area.lat},${area.lng}`,
+              `https://map.kakao.com/link/to/${encodeURIComponent(area.address || area.name)},${area.lat},${area.lng}`,
             )
           }
         >
