@@ -17,19 +17,19 @@ export default function KakaoMap() {
   // 🔥 핵심: 선택된 마커 정보를 담을 상태
   const [selectedArea, setSelectedArea] = useState<SmokingArea | null>(null);
 
-  useEffect(() => {
-    const existingScript = document.getElementById("kakao-map-script");
-    if (existingScript) {
-      setIsLoaded(true);
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = "kakao-map-script";
-    script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_KEY}&autoload=false`;
-    script.async = true;
-    script.onload = () => setIsLoaded(true);
-    document.head.appendChild(script);
-  }, []);
+  // useEffect(() => {
+  //   const existingScript = document.getElementById("kakao-map-script");
+  //   if (existingScript) {
+  //     setIsLoaded(true);
+  //     return;
+  //   }
+  //   const script = document.createElement("script");
+  //   script.id = "kakao-map-script";
+  //   script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_KEY}&autoload=false`;
+  //   script.async = true;
+  //   script.onload = () => setIsLoaded(true);
+  //   document.head.appendChild(script);
+  // }, []);
 
   useEffect(() => {
     if (!isLoaded || !mapContainerRef.current) return;
