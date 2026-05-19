@@ -5,6 +5,7 @@ import Script from "next/script";
 import { useSmokingAreas } from "@/hooks/useSmokingAreas";
 import { SmokingArea } from "@/types/smoking";
 import AreaDetailCard from "@/components/map/AreaDetailCard";
+import DarkModeToggleButton from "@/components/map/DarkModeToggleButton";
 
 export default function KakaoMap() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -85,9 +86,15 @@ export default function KakaoMap() {
         onLoad={() => setIsLoaded(true)} // 스크립트 로드 완료 시 상태 변경
         strategy="afterInteractive" // 인터랙티브한 시점에 로드
       />
-      <div ref={mapContainerRef} style={{ width: "100%", height: "100dvh" }} />
+      <div
+        ref={mapContainerRef}
+        style={{ width: "100%", height: "100dvh" }}
+        className="kakao-map-container"
+      />
 
-      {/* 상세 정보 오버레이 (간단한 예시) */}
+      <DarkModeToggleButton />
+
+      {/* 상세 정보 오버레이 */}
       {selectedArea && (
         <AreaDetailCard
           area={selectedArea}
