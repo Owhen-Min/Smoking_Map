@@ -23,31 +23,38 @@
   /* red-500 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* 바탕색 (Dark) - 완전 블랙이 아닌 고급스러운 다크 그레이 */
-    --background: #09090b;
-    /* zinc-950 */
-    /* 카드 및 컴포넌트 배경색 (Dark) */
-    --surface: #18181b;
-    /* zinc-900 */
-    /* 기본 텍스트 (Dark) */
-    --foreground: #fafafa;
-    /* zinc-50 */
+.dark {
+  /* 바탕색 (Dark) - 완전 블랙이 아닌 고급스러운 다크 그레이 */
+  --background: #09090b;
+  /* zinc-950 */
+  /* 카드 및 컴포넌트 배경색 (Dark) */
+  --surface: #18181b;
+  /* zinc-900 */
+  /* 기본 텍스트 (Dark) */
+  --foreground: #fafafa;
+  /* zinc-50 */
 
-    /* 다크모드에서는 메인 컬러를 살짝 밝게 */
-    --primary: #3b82f6;
-    /* blue-500 */
+  /* 다크모드에서는 메인 컬러를 살짝 밝게 */
+  --primary: #3b82f6;
+  /* blue-500 */
 
-    /* 다크모드에서도 카카오 옐로우는 유지 (가시성 매우 좋음) */
-    --kakao-yellow: #fee500;
-    --kakao-text: #000000;
+  /* 다크모드에서도 카카오 옐로우는 유지 (가시성 매우 좋음) */
+  --kakao-yellow: #fee500;
+  --kakao-text: #000000;
 
-    /* 서브/보색 (Dark) */
-    --danger: #f87171;
-    /* red-400 */
-  }
+  /* 서브/보색 (Dark) */
+  --danger: #f87171;
+  /* red-400 */
 }
+
+/* .dark .kakao-map-container {
+  filter: invert(90%) hue-rotate(180deg) brightness(80%) contrast(100%);
+} */
+
+.dark .kakao-map-container {
+  filter: brightness(80%) contrast(100%);
+}
+
 
 @theme inline {
   --color-background: var(--background);
