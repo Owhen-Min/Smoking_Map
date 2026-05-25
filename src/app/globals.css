@@ -21,6 +21,11 @@
   /* 서브/보색 (강조, 경고, 신고용) - 생동감 있는 레드/코랄 */
   --danger: #ef4444;
   /* red-500 */
+
+  /* 정확도별 색상 (Light) */
+  --accuracy-high: #10b981;
+  --accuracy-medium: #f59e0b;
+  --accuracy-low: #ef4444;
 }
 
 .dark {
@@ -45,10 +50,15 @@
   /* 서브/보색 (Dark) */
   --danger: #f87171;
   /* red-400 */
+
+  /* 정확도별 색상 (Dark) */
+  --accuracy-high: #34d399;
+  --accuracy-medium: #fbbf24;
+  --accuracy-low: #f87171;
 }
 
 /* .dark .kakao-map-container {
-  filter: invert(90%) hue-rotate(180deg) brightness(80%) contrast(100%);
+  filter: invert(90%) hue-rotate(180deg) contrast(100%);
 } */
 
 .dark .kakao-map-container {
@@ -64,6 +74,10 @@
   --color-kakao: var(--kakao-yellow);
   --color-kakao-text: var(--kakao-text);
   --color-danger: var(--danger);
+
+  --color-accuracy-high: var(--accuracy-high);
+  --color-accuracy-medium: var(--accuracy-medium);
+  --color-accuracy-low: var(--accuracy-low);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

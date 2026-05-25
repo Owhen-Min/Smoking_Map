@@ -14,6 +14,30 @@ export default function AreaDetailCard({ area, onClose }: Props) {
     return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   })() : '-';
 
+  const getAccuracyBadge = (accuracy: "high" | "medium" | "low") => {
+    switch (accuracy) {
+      case "low":
+        return (
+          <span className="text-xs px-2 py-0.5 bg-accuracy-low/10 text-accuracy-low rounded font-medium flex items-center gap-1">
+            정확도: 낮음 🔴
+          </span>
+        );
+      case "medium":
+        return (
+          <span className="text-xs px-2 py-0.5 bg-accuracy-medium/10 text-accuracy-medium rounded font-medium flex items-center gap-1">
+            정확도: 보통 🟡
+          </span>
+        );
+      case "high":
+      default:
+        return (
+          <span className="text-xs px-2 py-0.5 bg-accuracy-high/10 text-accuracy-high rounded font-medium flex items-center gap-1">
+            정확도: 높음 🟢
+          </span>
+        );
+    }
+  };
+
   // 1. 축소된 상태 (간략한 정보)
   if (!isExpanded) {
     return (
@@ -50,6 +74,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
             <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/70 rounded">
               {area.source === "public" ? "공공" : "제보"}
             </span>
+            {getAccuracyBadge(area.accuracy)}
           </div>
         </div>
         <div className="flex gap-2">
@@ -117,6 +142,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
           <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">
             최근 확인: {formattedDate}
           </span>
+          {getAccuracyBadge(area.accuracy)}
         </div>
 
         {area.address && (
