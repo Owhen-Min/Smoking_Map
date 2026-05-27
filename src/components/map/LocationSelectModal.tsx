@@ -35,6 +35,25 @@ export default function LocationSelectModal({
   const [address, setAddress] = useState(initialAddress);
   const [isSaving, setIsSaving] = useState(false);
 
+  // React 19 / Compiler 및 Turbopack 최적화 대응: 의존성 배열 크기 변동 경고 해결을 위해 Props 레퍼런스 Ref 캐싱 적용
+  const propsRef = useRef({
+    initialLat,
+    initialLng,
+    mode,
+    allAreas,
+    editingAreaAccuracy,
+  });
+
+  useEffect(() => {
+    propsRef.current = {
+      initialLat,
+      initialLng,
+      mode,
+      allAreas,
+      editingAreaAccuracy,
+    };
+  }, [initialLat, initialLng, mode, allAreas, editingAreaAccuracy]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -42,28 +61,30 @@ export default function LocationSelectModal({
     const timer = setTimeout(() => {
       if (!mapContainerRef.current || !window.kakao || !window.kakao.maps) return;
 
+      const currentProps = propsRef.current;
+
       window.kakao.maps.load(() => {
         const options = {
-          center: new window.kakao.maps.LatLng(initialLat, initialLng),
+          center: new window.kakao.maps.LatLng(currentProps.initialLat, currentProps.initialLng),
           level: 3,
         };
         const map = new window.kakao.maps.Map(mapContainerRef.current, options);
         mapInstance.current = map;
 
         // 마커 노출 제어
-        if (mode === "edit") {
+        if (currentProps.mode === "edit") {
           // 수정 시: 수정하려는 흡연장 기존 위치 마커만 단일 노출
-          const markerImage = getMarkerImage(editingAreaAccuracy || "high");
+          const markerImage = getMarkerImage(currentProps.editingAreaAccuracy || "high");
           if (markerImage) {
             new window.kakao.maps.Marker({
-              position: new window.kakao.maps.LatLng(initialLat, initialLng),
+              position: new window.kakao.maps.LatLng(currentProps.initialLat, currentProps.initialLng),
               map: map,
               image: markerImage,
             });
           }
-        } else if (mode === "report" && allAreas) {
+        } else if (currentProps.mode === "report" && currentProps.allAreas) {
           // 제보 시: 모든 기존 흡연장 위치 노출
-          allAreas.forEach((area) => {
+          currentProps.allAreas.forEach((area) => {
             const markerImage = getMarkerImage(area.accuracy);
             if (markerImage) {
               new window.kakao.maps.Marker({
@@ -100,7 +121,8 @@ export default function LocationSelectModal({
       clearTimeout(timer);
       mapInstance.current = null;
     };
-  }, [isOpen, initialLat, initialLng, mode, allAreas, editingAreaAccuracy]);
+  }, [isOpen]);
+
 
   if (!isOpen) return null;
 

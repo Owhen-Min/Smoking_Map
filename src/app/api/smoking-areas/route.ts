@@ -44,18 +44,24 @@ export async function PATCH(request: Request) {
         last_updated_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
-      .single();
+      .select();
 
     if (error) {
       console.error('Error updating smoking area:', error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    if (!data || data.length === 0) {
+      return NextResponse.json({
+        error: '수정 권한이 없거나 대상 흡연구역을 찾을 수 없습니다. Supabase RLS(Row Level Security) UPDATE 정책이 활성화되어 있는지 확인해 주세요.'
+      }, { status: 403 });
+    }
+
+    return NextResponse.json(data[0]);
   } catch (err) {
     console.error('Unexpected error in PATCH:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
 
