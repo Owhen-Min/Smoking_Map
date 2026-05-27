@@ -179,6 +179,9 @@ export default function KakaoMap() {
           initialLng={editingArea.lng}
           initialAddress={editingArea.address || ""}
           title={`${editingArea.name || "흡연구역"} 위치 수정`}
+          mode="edit"
+          allAreas={data}
+          editingAreaAccuracy={editingArea.accuracy}
           onConfirm={handleConfirmLocationEdit}
         />
       )}
