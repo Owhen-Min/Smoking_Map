@@ -130,7 +130,6 @@ export default function LocationSelectModal({
     setIsSaving(true);
     try {
       await onConfirm(lat, lng, address);
-      onClose();
     } catch (err: any) {
       console.error(err);
       alert(err.message || "위치 설정 중 오류가 발생했습니다.");

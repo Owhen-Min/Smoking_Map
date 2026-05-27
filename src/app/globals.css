@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   /* 바탕색 (Light) - 눈이 편안한 아주 옅은 회백색 */
   --background: #f4f4f5;

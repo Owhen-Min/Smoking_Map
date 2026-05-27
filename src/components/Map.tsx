@@ -5,11 +5,12 @@ import Script from "next/script";
 import { useSmokingAreas } from "@/hooks/useSmokingAreas";
 import { useMapGeolocation } from "@/hooks/useMapGeolocation";
 import { getMarkerImage } from "@/lib/map";
-import { updateSmokingAreaLocation } from "@/services/smokingArea";
+import { updateSmokingAreaLocation, createSmokingAreaReport } from "@/services/smokingArea";
 import { SmokingArea } from "@/types/smoking";
 import AreaDetailCard from "@/components/map/AreaDetailCard";
 import DarkModeToggleButton from "@/components/map/DarkModeToggleButton";
 import LocationSelectModal from "@/components/map/LocationSelectModal";
+import ReportDetailsModal from "@/components/map/ReportDetailsModal";
 
 export default function KakaoMap() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -25,6 +26,12 @@ export default function KakaoMap() {
   // 위치 수정 모달 관련 상태들
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [editingArea, setEditingArea] = useState<SmokingArea | null>(null);
+
+  // 제보 관련 상태들
+  const [isReportLocationModalOpen, setIsReportLocationModalOpen] = useState(false);
+  const [isReportDetailsModalOpen, setIsReportDetailsModalOpen] = useState(false);
+  const [reportCoords, setReportCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [reportAddress, setReportAddress] = useState<string>("");
 
   // 커스텀 훅으로 위치 조회/트래킹 기능 분리
   const { isLocating, handleGoToMyLocation, startTracking } = useMapGeolocation({
@@ -74,6 +81,7 @@ export default function KakaoMap() {
     });
   }, [data]);
 
+  // --- 위치 수정 핸들러 ---
   const handleStartEditLocation = (area: SmokingArea) => {
     setSelectedArea(null); // 상세 카드 닫기
     setEditingArea(area);
@@ -90,22 +98,70 @@ export default function KakaoMap() {
         lng,
         address
       );
-      
+
       alert("흡연구역 위치 정보가 성공적으로 수정되었습니다.");
       setIsLocationModalOpen(false);
       setEditingArea(null);
-      
+
       // 데이터 갱신
       await refetch();
     } catch (err: any) {
       console.error("위치 수정 오류:", err);
-      // RLS 등으로 막혀있는 경우 에러 메시지를 명확히 띄워줍니다.
       alert(
         err.message?.includes("permission denied")
           ? "데이터 수정 권한이 없습니다. (Supabase RLS/Privilege 제한)"
           : err.message || "위치 정보 수정에 실패했습니다."
       );
-      throw err; // 모달 내 Loading 상태 처리를 위해 에러를 전파합니다.
+      throw err;
+    }
+  };
+
+  // --- 신규 제보 핸들러 ---
+  const handleStartReport = () => {
+    setSelectedArea(null); // 상세 카드 닫기
+
+    // 현재 지도의 중심 좌표 획득하여 제보 모달의 기본값으로 설정
+    let currentCenter = { lat: 37.5665, lng: 126.978 };
+    if (mapInstance.current) {
+      const center = mapInstance.current.getCenter();
+      currentCenter = { lat: center.getLat(), lng: center.getLng() };
+    }
+
+    setReportCoords(currentCenter);
+    setReportAddress("");
+    setIsReportLocationModalOpen(true);
+  };
+
+  const handleConfirmReportLocation = async (lat: number, lng: number, address: string) => {
+    setReportCoords({ lat, lng });
+    setReportAddress(address);
+    setIsReportLocationModalOpen(false); // 위치 모달 닫고
+    setIsReportDetailsModalOpen(true);   // 인풋 폼 모달 열기
+  };
+
+  const handleConfirmReportDetails = async (name: string, description: string, address: string) => {
+    if (!reportCoords) return;
+
+    try {
+      await createSmokingAreaReport({
+        name,
+        lat: reportCoords.lat,
+        lng: reportCoords.lng,
+        address,
+        description,
+      });
+
+      alert("성공적으로 제보가 완료되었습니다! 즉시 지도상에 등록되었습니다.");
+      setIsReportDetailsModalOpen(false);
+      setReportCoords(null);
+      setReportAddress("");
+
+      // 데이터 갱신
+      await refetch();
+    } catch (err: any) {
+      console.error("제보 등록 오류:", err);
+      alert(err.message || "제보 등록에 실패했습니다.");
+      throw err;
     }
   };
 
@@ -124,10 +180,10 @@ export default function KakaoMap() {
 
       <DarkModeToggleButton />
 
-      {/* 내 위치로 이동 버튼 */}
+      {/* 내 위치로 이동 버튼 - 제보하기 버튼과의 세로 배치를 위해 바텀 여백을 88px로 조정 */}
       <button
         onClick={handleGoToMyLocation}
-        className="absolute bottom-6 right-6 z-30 p-3.5 rounded-full bg-surface shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-foreground border border-foreground/5 cursor-pointer"
+        className="absolute bottom-[88px] right-6 z-30 p-3.5 rounded-full bg-surface shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-foreground border border-foreground/5 cursor-pointer"
         aria-label="내 위치로 이동"
         disabled={isLocating}
       >
@@ -158,6 +214,25 @@ export default function KakaoMap() {
         </svg>
       </button>
 
+      {/* 신규 흡연구역 제보 버튼 */}
+      <button
+        onClick={handleStartReport}
+        className="absolute bottom-6 right-6 z-30 px-5 py-3.5 rounded-full bg-primary text-white font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border border-white/10 dark:border-black/5"
+        aria-label="흡연구역 제보"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2.8}
+          stroke="currentColor"
+          className="w-5 h-5"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        <span className="text-sm tracking-wide">제보하기</span>
+      </button>
+
       {/* 상세 정보 오버레이 */}
       {selectedArea && (
         <AreaDetailCard
@@ -167,7 +242,7 @@ export default function KakaoMap() {
         />
       )}
 
-      {/* 위치 수정/지정용 전용 팝업 모달 */}
+      {/* 위치 수정용 전용 팝업 모달 */}
       {isLocationModalOpen && editingArea && (
         <LocationSelectModal
           isOpen={isLocationModalOpen}
@@ -183,6 +258,40 @@ export default function KakaoMap() {
           allAreas={data}
           editingAreaAccuracy={editingArea.accuracy}
           onConfirm={handleConfirmLocationEdit}
+        />
+      )}
+
+      {/* 신규 제보 위치 선택용 전용 팝업 모달 */}
+      {isReportLocationModalOpen && reportCoords && (
+        <LocationSelectModal
+          isOpen={isReportLocationModalOpen}
+          onClose={() => {
+            setIsReportLocationModalOpen(false);
+            setReportCoords(null);
+          }}
+          initialLat={reportCoords.lat}
+          initialLng={reportCoords.lng}
+          initialAddress={reportAddress}
+          title="새로운 흡연구역 제보"
+          mode="report"
+          allAreas={data}
+          onConfirm={handleConfirmReportLocation}
+        />
+      )}
+
+      {/* 제보 세부 내용 기입용 팝업 모달 */}
+      {isReportDetailsModalOpen && reportCoords && (
+        <ReportDetailsModal
+          isOpen={isReportDetailsModalOpen}
+          onClose={() => {
+            setIsReportDetailsModalOpen(false);
+            setReportCoords(null);
+            setReportAddress("");
+          }}
+          lat={reportCoords.lat}
+          lng={reportCoords.lng}
+          address={reportAddress}
+          onConfirm={handleConfirmReportDetails}
         />
       )}
     </div>
