@@ -7,11 +7,16 @@ export function useSmokingAreas() {
   const [data, setData] = useState<SmokingArea[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchSmokingAreas()
+  const refetch = () => {
+    setLoading(true);
+    return fetchSmokingAreas()
       .then(setData)
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    refetch();
   }, []);
 
-  return { data, loading };
-}
+  return { data, loading, refetch };
+}

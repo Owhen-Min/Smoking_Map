@@ -4,15 +4,40 @@ import { SmokingArea } from "@/types/smoking";
 interface Props {
   area: SmokingArea;
   onClose: () => void;
+  onEditLocation: (area: SmokingArea) => void;
 }
 
-export default function AreaDetailCard({ area, onClose }: Props) {
+export default function AreaDetailCard({ area, onClose, onEditLocation }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formattedDate = area.last_updated_at ? (() => {
     const d = new Date(area.last_updated_at);
     return `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
   })() : '-';
+
+  const getAccuracyBadge = (accuracy: "high" | "medium" | "low") => {
+    switch (accuracy) {
+      case "low":
+        return (
+          <span className="text-xs px-2 py-0.5 bg-accuracy-low/10 text-accuracy-low rounded font-medium flex items-center gap-1">
+            정확도: 낮음 🔴
+          </span>
+        );
+      case "medium":
+        return (
+          <span className="text-xs px-2 py-0.5 bg-accuracy-medium/10 text-accuracy-medium rounded font-medium flex items-center gap-1">
+            정확도: 보통 🟡
+          </span>
+        );
+      case "high":
+      default:
+        return (
+          <span className="text-xs px-2 py-0.5 bg-accuracy-high/10 text-accuracy-high rounded font-medium flex items-center gap-1">
+            정확도: 높음 🟢
+          </span>
+        );
+    }
+  };
 
   // 1. 축소된 상태 (간략한 정보)
   if (!isExpanded) {
@@ -50,6 +75,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
             <span className="text-xs px-2 py-0.5 bg-foreground/10 text-foreground/70 rounded">
               {area.source === "public" ? "공공" : "제보"}
             </span>
+            {getAccuracyBadge(area.accuracy)}
           </div>
         </div>
         <div className="flex gap-2">
@@ -117,6 +143,7 @@ export default function AreaDetailCard({ area, onClose }: Props) {
           <span className="text-xs px-2 py-0.5 bg-primary/10 text-primary rounded font-medium">
             최근 확인: {formattedDate}
           </span>
+          {getAccuracyBadge(area.accuracy)}
         </div>
 
         {area.address && (
@@ -130,7 +157,10 @@ export default function AreaDetailCard({ area, onClose }: Props) {
           <button className="py-2.5 bg-foreground/5 hover:bg-foreground/10 text-foreground rounded-xl text-sm font-medium transition-colors">
             📷 사진 등록
           </button>
-          <button className="py-2.5 bg-foreground/5 hover:bg-primary/10 rounded-xl text-sm font-medium text-primary transition-colors">
+          <button
+            onClick={() => onEditLocation(area)}
+            className="py-2.5 bg-foreground/5 hover:bg-primary/10 rounded-xl text-sm font-medium text-primary transition-colors"
+          >
             📌 위치 수정
           </button>
           <button className="py-2.5 bg-foreground/5 hover:bg-danger/10 rounded-xl text-sm font-medium text-danger transition-colors">
