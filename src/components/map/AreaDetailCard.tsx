@@ -4,9 +4,10 @@ import { SmokingArea } from "@/types/smoking";
 interface Props {
   area: SmokingArea;
   onClose: () => void;
+  onEditLocation: (area: SmokingArea) => void;
 }
 
-export default function AreaDetailCard({ area, onClose }: Props) {
+export default function AreaDetailCard({ area, onClose, onEditLocation }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const formattedDate = area.last_updated_at ? (() => {
@@ -156,7 +157,10 @@ export default function AreaDetailCard({ area, onClose }: Props) {
           <button className="py-2.5 bg-foreground/5 hover:bg-foreground/10 text-foreground rounded-xl text-sm font-medium transition-colors">
             📷 사진 등록
           </button>
-          <button className="py-2.5 bg-foreground/5 hover:bg-primary/10 rounded-xl text-sm font-medium text-primary transition-colors">
+          <button
+            onClick={() => onEditLocation(area)}
+            className="py-2.5 bg-foreground/5 hover:bg-primary/10 rounded-xl text-sm font-medium text-primary transition-colors"
+          >
             📌 위치 수정
           </button>
           <button className="py-2.5 bg-foreground/5 hover:bg-danger/10 rounded-xl text-sm font-medium text-danger transition-colors">

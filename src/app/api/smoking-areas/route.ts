@@ -26,3 +26,36 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function PATCH(request: Request) {
+  try {
+    const { id, lat, lng, address } = await request.json();
+
+    if (!id || lat === undefined || lng === undefined) {
+      return NextResponse.json({ error: 'Missing required fields (id, lat, lng)' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('smoking_areas')
+      .update({
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        address,
+        last_updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating smoking area:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error('Unexpected error in PATCH:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
