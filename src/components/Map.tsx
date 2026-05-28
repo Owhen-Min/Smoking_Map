@@ -5,6 +5,7 @@ import Script from "next/script";
 import { useSmokingAreas } from "@/hooks/useSmokingAreas";
 import { useMapGeolocation } from "@/hooks/useMapGeolocation";
 import { getMarkerImage } from "@/lib/map";
+import { checkReportLimit, incrementReportCount, MAX_REPORTS_PER_DAY } from "@/lib/rateLimit";
 import { updateSmokingAreaLocation, createSmokingAreaReport } from "@/services/smokingArea";
 import { SmokingArea } from "@/types/smoking";
 import AreaDetailCard from "@/components/map/AreaDetailCard";
@@ -120,6 +121,13 @@ export default function KakaoMap() {
   const handleStartReport = () => {
     setSelectedArea(null); // 상세 카드 닫기
 
+    // 레이트 리밋 검사 추가
+    const { allowed } = checkReportLimit();
+    if (!allowed) {
+      alert(`오늘 제보 횟수 초과(최대 ${MAX_REPORTS_PER_DAY}회)하여 더 이상 제보할 수 없습니다.`);
+      return;
+    }
+
     // 현재 지도의 중심 좌표 획득하여 제보 모달의 기본값으로 설정
     let currentCenter = { lat: 37.5665, lng: 126.978 };
     if (mapInstance.current) {
@@ -142,6 +150,16 @@ export default function KakaoMap() {
   const handleConfirmReportDetails = async (name: string, description: string, address: string) => {
     if (!reportCoords) return;
 
+    // 레이트 리밋 한 번 더 검증
+    const { allowed } = checkReportLimit();
+    if (!allowed) {
+      alert(`오늘 제보 횟수 초과(최대 ${MAX_REPORTS_PER_DAY}회)하여 더 이상 제보할 수 없습니다.`);
+      setIsReportDetailsModalOpen(false);
+      setReportCoords(null);
+      setReportAddress("");
+      return;
+    }
+
     try {
       await createSmokingAreaReport({
         name,
@@ -150,6 +168,9 @@ export default function KakaoMap() {
         address,
         description,
       });
+
+      // 성공 시 카운트 증가
+      incrementReportCount();
 
       alert("성공적으로 제보가 완료되었습니다! 즉시 지도상에 등록되었습니다.");
       setIsReportDetailsModalOpen(false);
