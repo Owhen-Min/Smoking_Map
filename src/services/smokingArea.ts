@@ -27,4 +27,29 @@ export async function updateSmokingAreaLocation(id: string, lat: number, lng: nu
 
   const data = await response.json();
   return data;
-}
+}
+
+export async function createSmokingAreaReport(report: {
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  description?: string;
+}): Promise<SmokingArea> {
+  const response = await fetch('/api/smoking-areas', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(report),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to submit smoking area report');
+  }
+
+  const data = await response.json();
+  return data;
+}
+

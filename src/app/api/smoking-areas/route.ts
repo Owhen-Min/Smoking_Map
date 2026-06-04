@@ -64,4 +64,41 @@ export async function PATCH(request: Request) {
   }
 }
 
+export async function POST(request: Request) {
+  try {
+    const { name, lat, lng, address, description } = await request.json();
+
+    if (!name || lat === undefined || lng === undefined || !address) {
+      return NextResponse.json({ error: 'Missing required fields (name, lat, lng, address)' }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from('smoking_areas')
+      .insert({
+        name,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        address,
+        description,
+        source: 'user',
+        accuracy: 'low',
+        status: 'approved',
+        last_updated_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating smoking area report:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (err) {
+    console.error('Unexpected error in POST:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+
 
