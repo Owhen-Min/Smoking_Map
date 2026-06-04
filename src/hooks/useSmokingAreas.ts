@@ -10,7 +10,10 @@ export function useSmokingAreas() {
   const refetch = () => {
     setLoading(true);
     return fetchSmokingAreas()
-      .then(setData)
+      .then((newData) => {
+        setData(newData);
+        return newData;
+      })
       .finally(() => setLoading(false));
   };
 
