@@ -12,6 +12,7 @@ import AreaDetailCard from "@/components/map/AreaDetailCard";
 import DarkModeToggleButton from "@/components/map/DarkModeToggleButton";
 import LocationSelectModal from "@/components/map/LocationSelectModal";
 import ReportDetailsModal from "@/components/map/ReportDetailsModal";
+import SearchBar from "@/components/map/SearchBar";
 
 export default function KakaoMap() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -186,6 +187,14 @@ export default function KakaoMap() {
     }
   };
 
+  // --- 주소지/역 검색 핸들러 ---
+  const handleSelectLocation = (lat: number, lng: number) => {
+    if (!mapInstance.current) return;
+    const moveLatLng = new window.kakao.maps.LatLng(lat, lng);
+    mapInstance.current.setCenter(moveLatLng);
+    mapInstance.current.setLevel(3); // 지도 줌 레벨을 3으로 확대
+  };
+
   return (
     <div className="w-full absolute right-0 top-0">
       <Script
@@ -200,6 +209,7 @@ export default function KakaoMap() {
       />
 
       <DarkModeToggleButton />
+      <SearchBar onSelectLocation={handleSelectLocation} />
 
       {/* 내 위치로 이동 버튼 - 제보하기 버튼과의 세로 배치를 위해 바텀 여백을 88px로 조정 */}
       <button
