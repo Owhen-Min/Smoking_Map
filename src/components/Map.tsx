@@ -187,6 +187,22 @@ export default function KakaoMap() {
     }
   };
 
+  // --- 사진 등록 성공 핸들러 ---
+  const handlePhotoUploadSuccess = async () => {
+    try {
+      const updatedAreas = await refetch();
+      if (selectedArea && updatedAreas) {
+        const updated = updatedAreas.find((a: SmokingArea) => a.id === selectedArea.id);
+        if (updated) {
+          setSelectedArea(updated);
+        }
+      }
+    } catch (err) {
+      console.error("사진 등록 후 데이터 갱신 에러:", err);
+    }
+  };
+
+
   // --- 주소지/역 검색 핸들러 ---
   const handleSelectLocation = (lat: number, lng: number) => {
     if (!mapInstance.current) return;
@@ -270,6 +286,7 @@ export default function KakaoMap() {
           area={selectedArea}
           onClose={() => setSelectedArea(null)}
           onEditLocation={handleStartEditLocation}
+          onPhotoUploadSuccess={handlePhotoUploadSuccess}
         />
       )}
 

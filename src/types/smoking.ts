@@ -10,6 +10,11 @@ export type SmokingArea = {
   description?: string;
   address?: string;
   smoking_area_images?: {
-    image_url: string;
+    id: string;
+    smoking_area_id: string;
+    image_url_sd: string;
+    image_url_hd: string;
+    is_primary: boolean;
+    created_at: string;
   }[];
 };
