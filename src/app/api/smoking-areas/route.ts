@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // 1시간(3600초)마다 백그라운드에서 데이터를 주기적으로 업데이트하고,
 // 그 전까지는 서버에 캐싱된(저장된) 데이터를 즉시 반환합니다.
