@@ -6,6 +6,7 @@ export type SmokingArea = {
   last_updated_at: Date;
   source: 'public' | 'user';
   accuracy: 'high' | 'medium' | 'low';
+  confirmation_count?: number;
   status: 'pending' | 'approved' | 'rejected';
   description?: string;
   address?: string;
