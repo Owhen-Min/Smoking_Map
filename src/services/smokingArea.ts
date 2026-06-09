@@ -54,6 +54,24 @@ export async function createSmokingAreaReport(report: {
   return data;
 }
 
+export async function confirmSmokingArea(id: string): Promise<SmokingArea> {
+  const response = await fetch('/api/smoking-areas/confirm', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to confirm smoking area');
+  }
+
+  const data = await response.json();
+  return data;
+}
+
 export async function uploadSmokingAreaImage(
   areaId: string,
   hdBlob: Blob,

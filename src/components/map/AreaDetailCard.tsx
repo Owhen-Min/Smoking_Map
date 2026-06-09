@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { SmokingArea } from "@/types/smoking";
-import { likeSmokingAreaImage } from "@/services/smokingArea";
+import { confirmSmokingArea, likeSmokingAreaImage } from "@/services/smokingArea";
+import { hasConfirmedArea, markAreaConfirmed } from "@/lib/confirmation";
 import { getLikedImageIds, markImageLiked } from "@/lib/photoLikes";
 import PhotoUploadModal from "@/components/map/PhotoUploadModal";
 
@@ -11,20 +12,43 @@ interface Props {
   onClose: () => void;
   onEditLocation: (area: SmokingArea) => void;
   onPhotoUploadSuccess: () => void;
+  onAreaUpdated: () => void;
 }
 
-export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoUploadSuccess }: Props) {
+export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoUploadSuccess, onAreaUpdated }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [hasConfirmed, setHasConfirmed] = useState(false);
   const [likedImageIds, setLikedImageIds] = useState<string[]>([]);
   const [isLiking, setIsLiking] = useState(false);
 
-  // 다른 마커 선택 시 area prop만 바뀌므로 좋아요 여부를 다시 조회하고 인덱스 초기화
+  // 다른 마커 선택 시 area prop만 바뀌므로 확인/좋아요 여부를 다시 조회하고 인덱스 초기화
   useEffect(() => {
+    setHasConfirmed(hasConfirmedArea(area.id));
     setLikedImageIds(getLikedImageIds());
     setCurrentImageIndex(0);
   }, [area.id]);
+
+  const handleConfirmArea = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasConfirmed || isConfirming) return;
+
+    setIsConfirming(true);
+    try {
+      await confirmSmokingArea(area.id);
+      markAreaConfirmed(area.id);
+      setHasConfirmed(true);
+      alert("확인해주셔서 감사합니다! 흡연구역 정확도에 반영되었습니다.");
+      onAreaUpdated();
+    } catch (err: any) {
+      console.error("흡연구역 확인 오류:", err);
+      alert(err.message || "확인 처리에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsConfirming(false);
+    }
+  };
 
   const handleLikeImage = async (e: React.MouseEvent, imageId: string) => {
     e.stopPropagation();
@@ -270,6 +294,28 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
             {area.address}
           </p>
         )}
+
+        {/* 흡연 가능 확인 버튼 */}
+        <button
+          onClick={handleConfirmArea}
+          disabled={hasConfirmed || isConfirming}
+          className={`w-full py-3 mb-2 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+            hasConfirmed
+              ? "bg-accuracy-high/10 text-accuracy-high cursor-default"
+              : "bg-accuracy-high text-white hover:opacity-95 cursor-pointer disabled:opacity-50"
+          }`}
+        >
+          {isConfirming ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>확인 처리 중...</span>
+            </>
+          ) : hasConfirmed ? (
+            <span>✅ 흡연 가능 확인 완료 (확인 {area.confirmation_count ?? 0}회)</span>
+          ) : (
+            <span>✅ 여기서 흡연 가능해요 (확인 {area.confirmation_count ?? 0}회)</span>
+          )}
+        </button>
 
         {/* 버튼 그룹 */}
         <div className="grid grid-cols-3 gap-2 mb-2">

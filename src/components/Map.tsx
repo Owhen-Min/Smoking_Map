@@ -187,8 +187,8 @@ export default function KakaoMap() {
     }
   };
 
-  // --- 사진 등록 성공 핸들러 ---
-  const handlePhotoUploadSuccess = async () => {
+  // --- 흡연구역 데이터 갱신 핸들러 (사진 등록/확인 등 변경 발생 시) ---
+  const handleAreaDataRefresh = async () => {
     try {
       const updatedAreas = await refetch();
       if (selectedArea && updatedAreas) {
@@ -198,7 +198,7 @@ export default function KakaoMap() {
         }
       }
     } catch (err) {
-      console.error("사진 등록 후 데이터 갱신 에러:", err);
+      console.error("흡연구역 데이터 갱신 에러:", err);
     }
   };
 
@@ -286,7 +286,8 @@ export default function KakaoMap() {
           area={selectedArea}
           onClose={() => setSelectedArea(null)}
           onEditLocation={handleStartEditLocation}
-          onPhotoUploadSuccess={handlePhotoUploadSuccess}
+          onPhotoUploadSuccess={handleAreaDataRefresh}
+          onAreaUpdated={handleAreaDataRefresh}
         />
       )}
 
