@@ -15,6 +15,7 @@ export type SmokingArea = {
     image_url_sd: string;
     image_url_hd: string;
     is_primary: boolean;
+    like_count?: number;
     created_at: string;
   }[];
 };

@@ -13,7 +13,10 @@ export async function GET() {
         *,
         smoking_area_images (*)
       `)
-      .eq('status', 'approved');
+      .eq('status', 'approved')
+      // 대표사진(is_primary)이 항상 첫 번째로 오도록 정렬, 이후 등록순
+      .order('is_primary', { referencedTable: 'smoking_area_images', ascending: false })
+      .order('created_at', { referencedTable: 'smoking_area_images', ascending: true });
 
     if (error) {
       console.error('Error fetching smoking areas:', error);
