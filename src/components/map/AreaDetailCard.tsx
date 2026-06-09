@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { SmokingArea } from "@/types/smoking";
-import { confirmSmokingArea } from "@/services/smokingArea";
+import { confirmSmokingArea, likeSmokingAreaImage } from "@/services/smokingArea";
 import { hasConfirmedArea, markAreaConfirmed } from "@/lib/confirmation";
+import { getLikedImageIds, markImageLiked } from "@/lib/photoLikes";
 import PhotoUploadModal from "@/components/map/PhotoUploadModal";
 
 interface Props {
@@ -20,10 +21,14 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
   const [hasConfirmed, setHasConfirmed] = useState(false);
+  const [likedImageIds, setLikedImageIds] = useState<string[]>([]);
+  const [isLiking, setIsLiking] = useState(false);
 
-  // 다른 마커 선택 시 area prop만 바뀌므로 확인 여부를 다시 조회
+  // 다른 마커 선택 시 area prop만 바뀌므로 확인/좋아요 여부를 다시 조회하고 인덱스 초기화
   useEffect(() => {
     setHasConfirmed(hasConfirmedArea(area.id));
+    setLikedImageIds(getLikedImageIds());
+    setCurrentImageIndex(0);
   }, [area.id]);
 
   const handleConfirmArea = async (e: React.MouseEvent) => {
@@ -42,6 +47,24 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
       alert(err.message || "확인 처리에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setIsConfirming(false);
+    }
+  };
+
+  const handleLikeImage = async (e: React.MouseEvent, imageId: string) => {
+    e.stopPropagation();
+    if (likedImageIds.includes(imageId) || isLiking) return;
+
+    setIsLiking(true);
+    try {
+      await likeSmokingAreaImage(imageId);
+      markImageLiked(imageId);
+      setLikedImageIds((prev) => [...prev, imageId]);
+      onPhotoUploadSuccess(); // 좋아요 수/대표사진 변경분 갱신
+    } catch (err: any) {
+      console.error("사진 좋아요 오류:", err);
+      alert(err.message || "좋아요 처리에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsLiking(false);
     }
   };
 
@@ -139,6 +162,7 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
 
   // 2. 확장된 상태 (상세 정보)
   const hasImages = area.smoking_area_images && area.smoking_area_images.length > 0;
+  const currentImage = hasImages ? area.smoking_area_images![currentImageIndex] : null;
 
   return (
     <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-20 overflow-hidden transition-all duration-300 border border-foreground/5">
@@ -147,10 +171,35 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
         {hasImages ? (
           <>
             <img
-              src={area.smoking_area_images![currentImageIndex].image_url_hd}
+              src={currentImage!.image_url_hd}
               alt={`흡연구역 사진 ${currentImageIndex + 1}`}
               className="w-full h-full object-cover"
             />
+            {/* 사진 좋아요 버튼 + 대표사진 배지 */}
+            <div className="absolute top-3 right-14 flex items-center gap-1.5 z-10">
+              {currentImage!.is_primary && (
+                <span className="bg-primary/90 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                  ⭐ 대표
+                </span>
+              )}
+              <button
+                onClick={(e) => handleLikeImage(e, currentImage!.id)}
+                disabled={likedImageIds.includes(currentImage!.id) || isLiking}
+                className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-semibold transition-all ${
+                  likedImageIds.includes(currentImage!.id)
+                    ? "bg-danger/90 text-white cursor-default"
+                    : "bg-black/60 hover:bg-black/80 text-white cursor-pointer disabled:opacity-60"
+                }`}
+                title={
+                  likedImageIds.includes(currentImage!.id)
+                    ? "이미 좋아요를 누른 사진입니다"
+                    : "이 사진이 마음에 들면 좋아요를 눌러주세요. 좋아요가 가장 많은 사진이 대표사진이 됩니다."
+                }
+              >
+                <span>{likedImageIds.includes(currentImage!.id) ? "❤️" : "🤍"}</span>
+                <span>{currentImage!.like_count ?? 0}</span>
+              </button>
+            </div>
             {/* 좌우 네비게이션 버튼 (사진이 여러 개일 때만 표시) */}
             {area.smoking_area_images!.length > 1 && (
               <>

@@ -138,12 +138,12 @@ export default function PhotoUploadModal({ area, isOpen, onClose, onSuccess }: P
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div 
-        className="bg-surface border border-foreground/5 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-surface border border-foreground/5 rounded-3xl w-full max-w-md max-h-[90dvh] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
         {/* 모달 헤더 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-foreground/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-foreground/5 shrink-0">
           <h3 className="font-bold text-foreground text-lg">📸 사진 등록</h3>
           <button 
             onClick={handleCloseAndReset} 
@@ -154,8 +154,8 @@ export default function PhotoUploadModal({ area, isOpen, onClose, onSuccess }: P
           </button>
         </div>
 
-        {/* 모달 바디 */}
-        <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        {/* 모달 바디 (헤더/푸터를 제외한 영역만 세로 스크롤) */}
+        <div className="p-6 space-y-4 flex-1 min-h-0 overflow-y-auto">
           {/* 흡연구역 위치 정보 표시 */}
           <div className="bg-background rounded-xl p-3 text-xs text-foreground/70 space-y-1">
             <p className="font-semibold text-foreground truncate">{area.name || "이름 없는 흡연구역"}</p>
@@ -189,11 +189,11 @@ export default function PhotoUploadModal({ area, isOpen, onClose, onSuccess }: P
               />
             </div>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden border border-foreground/5 bg-foreground/5 flex items-center justify-center min-h-[200px] max-h-[280px]">
+            <div className="relative rounded-2xl overflow-hidden border border-foreground/5 bg-foreground/5 flex items-center justify-center min-h-[160px] max-h-[35dvh]">
               <img 
                 src={previewUrl} 
                 alt="미리보기" 
-                className="w-full h-full max-h-[280px] object-contain"
+                className="w-full h-full max-h-[35dvh] object-contain"
               />
               {!isUploading && (
                 <button 
@@ -250,7 +250,7 @@ export default function PhotoUploadModal({ area, isOpen, onClose, onSuccess }: P
         </div>
 
         {/* 모달 푸터 */}
-        <div className="px-6 py-4 border-t border-foreground/5 flex gap-3">
+        <div className="px-6 py-4 border-t border-foreground/5 flex gap-3 shrink-0">
           <button
             onClick={handleCloseAndReset}
             className="flex-1 py-3 bg-foreground/5 hover:bg-foreground/10 text-foreground font-semibold rounded-xl text-sm transition-colors"
