@@ -17,8 +17,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 서버 사이드 관리용 Supabase 클라이언트 (SERVICE_ROLE_KEY 미설정 시 ANON_KEY 폴백)
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const serviceKey = process.env.SUPABASE_SECRET_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabaseServer = createClient(supabaseUrl, serviceKey);
 
     // 1. 대상 사진 조회
