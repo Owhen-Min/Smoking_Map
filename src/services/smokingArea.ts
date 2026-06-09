@@ -128,4 +128,26 @@ export async function uploadSmokingAreaImage(
   return data;
 }
 
+export async function likeSmokingAreaImage(imageId: string): Promise<{
+  id: string;
+  like_count: number;
+  primary_image_id: string;
+}> {
+  const response = await fetch('/api/smoking-areas/images/like', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ image_id: imageId }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to like smoking area image');
+  }
+
+  const data = await response.json();
+  return data;
+}
+
 
