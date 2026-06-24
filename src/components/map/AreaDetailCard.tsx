@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { SmokingArea } from "@/types/smoking";
 import { confirmSmokingArea, likeSmokingAreaImage } from "@/services/smokingArea";
 import { hasConfirmedArea, markAreaConfirmed } from "@/lib/confirmation";
@@ -24,12 +24,79 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
   const [likedImageIds, setLikedImageIds] = useState<string[]>([]);
   const [isLiking, setIsLiking] = useState(false);
 
-  // 다른 마커 선택 시 area prop만 바뀌므로 확인/좋아요 여부를 다시 조회하고 인덱스 초기화
+  // 캐러셀 드래그/스크롤을 위한 Refs
+  const sliderRef = useRef<HTMLDivElement | null>(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const scrollLeftVal = useRef(0);
+
+  // 다른 마커 선택 시 area prop만 바뀌므로 확인/좋아요 여부를 다시 조회하고 인덱스 초기화 및 스크롤 위치 리셋
   useEffect(() => {
     setHasConfirmed(hasConfirmedArea(area.id));
     setLikedImageIds(getLikedImageIds());
     setCurrentImageIndex(0);
+    if (sliderRef.current) {
+      sliderRef.current.scrollLeft = 0;
+    }
   }, [area.id]);
+
+  // 스크롤 이벤트 핸들러: 실시간으로 스크롤 위치를 추적하여 현재 인덱스 갱신
+  const handleScroll = () => {
+    if (!sliderRef.current) return;
+    const container = sliderRef.current;
+    const index = Math.round(container.scrollLeft / container.clientWidth);
+    if (index !== currentImageIndex && index >= 0 && index < (area.smoking_area_images?.length || 0)) {
+      setCurrentImageIndex(index);
+    }
+  };
+
+  // 데스크톱 마우스 드래그 드롭 핸들러
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!sliderRef.current) return;
+    isDragging.current = true;
+    sliderRef.current.style.scrollSnapType = "none"; // 드래그 중 스냅 일시 해제
+    sliderRef.current.style.scrollBehavior = "auto"; // 즉각 스크롤
+    startX.current = e.pageX - sliderRef.current.offsetLeft;
+    scrollLeftVal.current = sliderRef.current.scrollLeft;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging.current || !sliderRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - sliderRef.current.offsetLeft;
+    const walk = (x - startX.current) * 1.5; // 드래그 감도 배율
+    sliderRef.current.scrollLeft = scrollLeftVal.current - walk;
+  };
+
+  const handleMouseUp = () => {
+    if (!isDragging.current || !sliderRef.current) return;
+    isDragging.current = false;
+    sliderRef.current.style.scrollSnapType = "x mandatory"; // 스냅 복원
+    sliderRef.current.style.scrollBehavior = "smooth";
+
+    // 마우스를 뗀 시점에 가장 가까운 사진으로 스냅 이동
+    const container = sliderRef.current;
+    const index = Math.round(container.scrollLeft / container.clientWidth);
+    container.scrollTo({
+      left: index * container.clientWidth,
+      behavior: "smooth",
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (!isDragging.current || !sliderRef.current) return;
+    isDragging.current = false;
+    sliderRef.current.style.scrollSnapType = "x mandatory";
+    sliderRef.current.style.scrollBehavior = "smooth";
+
+    const container = sliderRef.current;
+    const index = Math.round(container.scrollLeft / container.clientWidth);
+    container.scrollTo({
+      left: index * container.clientWidth,
+      behavior: "smooth",
+    });
+  };
+
 
   const handleConfirmArea = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -101,7 +168,7 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
   if (!isExpanded) {
     return (
       <div
-        className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-20 p-4 transition-all duration-300 cursor-pointer"
+        className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-40 p-4 transition-all duration-300 cursor-pointer"
         onClick={() => setIsExpanded(true)}
       >
         <div className="h-48 bg-foreground/10 relative hidden md:block rounded-xl overflow-hidden mb-3">
@@ -165,16 +232,41 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
   const currentImage = hasImages ? area.smoking_area_images![currentImageIndex] : null;
 
   return (
-    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-20 overflow-hidden transition-all duration-300 border border-foreground/5">
+    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-surface rounded-2xl shadow-xl z-40 overflow-hidden transition-all duration-300 border border-foreground/5">
       {/* 이미지 영역 */}
       <div className="h-48 bg-foreground/10 relative group">
         {hasImages ? (
           <>
-            <img
-              src={currentImage!.image_url_hd}
-              alt={`흡연구역 사진 ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover"
-            />
+            {/* 스크롤 가능한 캐러셀 뷰어 */}
+            <div
+              ref={sliderRef}
+              onScroll={handleScroll}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scrollbar-none select-none touch-pan-y cursor-grab active:cursor-grabbing"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              {area.smoking_area_images!.map((img, idx) => (
+                <div
+                  key={img.id}
+                  className="w-full h-full flex-shrink-0 snap-start pointer-events-none"
+                >
+                  <img
+                    src={img.image_url_hd}
+                    alt={`흡연구역 사진 ${idx + 1}`}
+                    className="w-full h-full object-cover select-none pointer-events-none"
+                    draggable={false}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* 오버레이 컨트롤 영역 (스크롤 영역 외부) */}
             {/* 사진 좋아요 버튼 + 대표사진 배지 */}
             <div className="absolute top-3 right-14 flex items-center gap-1.5 z-10">
               {currentImage!.is_primary && (
@@ -207,7 +299,11 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentImageIndex((prev) => prev - 1);
+                      const newIndex = currentImageIndex - 1;
+                      sliderRef.current?.scrollTo({
+                        left: newIndex * sliderRef.current.clientWidth,
+                        behavior: "smooth",
+                      });
                     }}
                     className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all z-10 font-bold cursor-pointer"
                   >
@@ -218,14 +314,18 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentImageIndex((prev) => prev + 1);
+                      const newIndex = currentImageIndex + 1;
+                      sliderRef.current?.scrollTo({
+                        left: newIndex * sliderRef.current.clientWidth,
+                        behavior: "smooth",
+                      });
                     }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/75 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all z-10 font-bold cursor-pointer"
                   >
                     ›
                   </button>
                 )}
-                {/* 사진 번호 표시 피액 */}
+                {/* 사진 번호 표시 */}
                 <span className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-medium z-10">
                   {currentImageIndex + 1} / {area.smoking_area_images!.length}
                 </span>
@@ -236,7 +336,10 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
                       key={idx}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setCurrentImageIndex(idx);
+                        sliderRef.current?.scrollTo({
+                          left: idx * sliderRef.current.clientWidth,
+                          behavior: "smooth",
+                        });
                       }}
                       className={`w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                         idx === currentImageIndex ? "bg-white w-3" : "bg-white/50 hover:bg-white/80"

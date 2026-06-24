@@ -227,58 +227,63 @@ export default function KakaoMap() {
       <DarkModeToggleButton />
       <SearchBar onSelectLocation={handleSelectLocation} />
 
-      {/* 내 위치로 이동 버튼 - 제보하기 버튼과의 세로 배치를 위해 바텀 여백을 88px로 조정 */}
-      <button
-        onClick={handleGoToMyLocation}
-        className="absolute bottom-[88px] right-6 z-30 p-3.5 rounded-full bg-surface shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-foreground border border-foreground/5 cursor-pointer"
-        aria-label="내 위치로 이동"
-        disabled={isLocating}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2.5}
-          stroke="currentColor"
-          className={`w-6 h-6 text-primary ${isLocating ? "animate-spin" : ""}`}
-        >
-          {isLocating ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-            />
-          ) : (
-            <>
-              <circle cx="12" cy="12" r="4" fill="currentColor" className="opacity-15 text-primary" />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 3v3m0 12v3M3 12h3m12 0h3m-9-6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z"
-              />
-            </>
-          )}
-        </svg>
-      </button>
+      {/* 내 위치로 이동 및 제보하기 버튼 - 모달이 열려있지 않을 때만 표시 */}
+      {!(isLocationModalOpen || isReportLocationModalOpen || isReportDetailsModalOpen) && (
+        <>
+          {/* 내 위치로 이동 버튼 - 제보하기 버튼과의 세로 배치를 위해 바텀 여백을 88px로 조정 */}
+          <button
+            onClick={handleGoToMyLocation}
+            className="absolute bottom-[88px] right-6 z-30 p-3.5 rounded-full bg-surface shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center text-foreground border border-foreground/5 cursor-pointer"
+            aria-label="내 위치로 이동"
+            disabled={isLocating}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2.5}
+              stroke="currentColor"
+              className={`w-6 h-6 text-primary ${isLocating ? "animate-spin" : ""}`}
+            >
+              {isLocating ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                />
+              ) : (
+                <>
+                  <circle cx="12" cy="12" r="4" fill="currentColor" className="opacity-15 text-primary" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 3v3m0 12v3M3 12h3m12 0h3m-9-6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z"
+                  />
+                </>
+              )}
+            </svg>
+          </button>
 
-      {/* 신규 흡연구역 제보 버튼 */}
-      <button
-        onClick={handleStartReport}
-        className="absolute bottom-6 right-6 z-30 px-5 py-3.5 rounded-full bg-primary text-white font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border border-white/10 dark:border-black/5"
-        aria-label="흡연구역 제보"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={2.8}
-          stroke="currentColor"
-          className="w-5 h-5"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        <span className="text-sm tracking-wide">제보하기</span>
-      </button>
+          {/* 신규 흡연구역 제보 버튼 */}
+          <button
+            onClick={handleStartReport}
+            className="absolute bottom-6 right-6 z-30 px-5 py-3.5 rounded-full bg-primary text-white font-bold shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer border border-white/10 dark:border-black/5"
+            aria-label="흡연구역 제보"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2.8}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span className="text-sm tracking-wide">제보하기</span>
+          </button>
+        </>
+      )}
 
       {/* 상세 정보 오버레이 */}
       {selectedArea && (
