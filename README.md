@@ -16,8 +16,8 @@
   - 지도 중심점을 기준으로 신규 흡연구역 제보 등록 가능
 
 - **🛡️ 안정성 및 보안 (Rate Limiting & RLS)**
-  - `localStorage` 기반으로 일일 최대 5회 제보/수정 제한 기능 (악성 제보 방지)
-  - **Supabase Row Level Security (RLS)** 설정을 통해 안전한 데이터 트랜잭션 보장
+  - 서명된 익명 HttpOnly 쿠키와 서버 집계로 한국 시간 기준 하루 합산 5회 제보/위치 수정 제한 (성공한 저장 기준)
+  - Supabase RPC 트랜잭션으로 사용량 확인과 저장을 원자적으로 처리. 아래 DB 운영 안내 참고
 
 - **🔍 검색 기능**
   - 도로명/지번 주소 및 인근 지하철역을 입력하여 지도의 검색 중심지 이동
@@ -89,7 +89,10 @@
 NEXT_PUBLIC_KAKAO_KEY=your_kakao_js_app_key
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SECRET_KEY=your_server_only_supabase_secret_key
 ```
+
+제보·수정 기능 배포 전에 운영 DB의 익명 사용량 RPC와 권한 정책을 적용해야 합니다.
 
 ### 2. 패키지 설치 및 실행
 ```bash
@@ -101,3 +104,16 @@ npm run dev
 ```
 
 브라우저에서 [http://localhost:3000](http://localhost:3000)으로 접속하여 실행을 확인할 수 있습니다.
+
+## DB 운영 및 권한
+
+Supabase SQL과 상세 운영 메모는 로컬 `supabase/` 폴더에서 관리하며 Git에 포함하지 않습니다. 새 환경을 구성할 때는 관리자로부터 SQL을 전달받아 먼저 적용해야 합니다.
+
+- `anon`과 `authenticated`는 승인된 흡연구역과 해당 사진 정보를 조회할 수 있습니다.
+- 제보·위치 수정은 서버가 검증한 익명 식별자로 `write_smoking_area_anonymous(uuid, text, jsonb)`를 호출합니다. 한국 시간 하루 합산 5회이며 실패한 저장은 집계하지 않습니다.
+- 사진 정보 저장·좋아요·흡연 가능 확인은 서버 전용 `SUPABASE_SECRET_KEY`가 필요합니다. 이 키를 클라이언트 환경 변수에 넣지 않습니다.
+- 브라우저의 테이블 직접 쓰기와 사용량 조회/RPC 호출은 허용하지 않습니다.
+- Storage는 승인된 장소의 새 사진 업로드만 허용합니다. 익명 삭제·덮어쓰기는 허용하지 않아 실패 업로드의 클라이언트 롤백이 파일을 지우지 못할 수 있습니다. 남은 파일은 관리자가 정리합니다.
+- SQL 적용 전 새 제보·수정 API를 배포하면 저장이 실패합니다. SQL 변경과 앱 배포를 함께 관리합니다.
+
+검증: `node --test tests/anonymous-writes.test.mjs`. SQL에 의존하는 DB 검증 스크립트는 로컬 `supabase/anonymous-writes-db.mjs`에 보관합니다.
