@@ -117,3 +117,11 @@ Supabase SQL과 상세 운영 메모는 로컬 `supabase/` 폴더에서 관리�
 - SQL 적용 전 새 제보·수정 API를 배포하면 저장이 실패합니다. SQL 변경과 앱 배포를 함께 관리합니다.
 
 검증: `node --test tests/anonymous-writes.test.mjs`. SQL에 의존하는 DB 검증 스크립트는 로컬 `supabase/anonymous-writes-db.mjs`에 보관합니다.
+
+## 제거 요청 및 관리자 검토
+
+상세 카드에서 사유와 설명을 제출하면 별도 요청이 `pending`으로 저장되며 장소는 계속 표시됩니다. 동일 익명 식별자의 검토 중인 동일 장소 요청은 중복 저장하지 않고, 한국 시간 하루 5회까지 접수합니다(제보·수정 한도와 별도).
+
+배포 전에 로컬 `202611150003_removal_requests.sql`을 추가 적용해야 합니다. 초기 통합 SQL은 다시 실행하지 않습니다. 서버는 `submit_smoking_area_removal(uuid, text, text, text)` RPC를 사용합니다.
+
+관리자는 Supabase에서 요청을 조회하고 DB 소유자 권한으로 `review_smoking_area_removal(요청ID, 승인여부, 검토메모)` 함수를 호출합니다. 승인은 장소를 `rejected`로 바꾸어 다음 조회부터 숨기며, 반려는 장소를 유지합니다. 검토 시각과 메모를 기록하고 원본 데이터와 사진은 삭제하지 않습니다. 요청 테이블은 공개 조회할 수 없고 관리자 HTTP API는 없습니다.
