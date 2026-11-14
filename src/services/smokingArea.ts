@@ -1,9 +1,10 @@
 import { SmokingArea } from '@/types/smoking';
 import { supabase } from '@/lib/supabase';
+import { anonymousMutation } from '@/lib/anonymousMutation';
 
 export async function fetchSmokingAreas(): Promise<SmokingArea[]> {
   const response = await fetch('/api/smoking-areas');
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch smoking areas');
   }
@@ -13,13 +14,7 @@ export async function fetchSmokingAreas(): Promise<SmokingArea[]> {
 }
 
 export async function updateSmokingAreaLocation(id: string, lat: number, lng: number, address?: string): Promise<SmokingArea> {
-  const response = await fetch('/api/smoking-areas', {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ id, lat, lng, address }),
-  });
+  const response = await anonymousMutation(JSON.stringify({ id, lat, lng, address }), 'PATCH');
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -37,13 +32,7 @@ export async function createSmokingAreaReport(report: {
   address: string;
   description?: string;
 }): Promise<SmokingArea> {
-  const response = await fetch('/api/smoking-areas', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(report),
-  });
+  const response = await anonymousMutation(JSON.stringify(report), 'POST');
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -168,4 +157,4 @@ export async function likeSmokingAreaImage(imageId: string): Promise<{
   return data;
 }
 
-
+
