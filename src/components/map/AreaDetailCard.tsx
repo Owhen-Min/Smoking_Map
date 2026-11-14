@@ -5,6 +5,7 @@ import { SmokingArea } from "@/types/smoking";
 import { confirmSmokingArea, likeSmokingAreaImage } from "@/services/smokingArea";
 import { hasConfirmedArea, markAreaConfirmed } from "@/lib/confirmation";
 import { getLikedImageIds, markImageLiked } from "@/lib/photoLikes";
+import RemovalRequestModal from "@/components/map/RemovalRequestModal";
 import PhotoUploadModal from "@/components/map/PhotoUploadModal";
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoUploadSuccess, onAreaUpdated }: Props) {
+  const [isRemovalOpen, setIsRemovalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -434,7 +436,7 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
           >
             📌 위치 수정
           </button>
-          <button className="py-2.5 bg-foreground/5 hover:bg-danger/10 rounded-xl text-sm font-medium text-danger transition-colors cursor-pointer">
+          <button onClick={() => setIsRemovalOpen(true)} className="py-2.5 bg-foreground/5 hover:bg-danger/10 rounded-xl text-sm font-medium text-danger transition-colors cursor-pointer">
             🚨 제거 요청
           </button>
         </div>
@@ -449,6 +451,8 @@ export default function AreaDetailCard({ area, onClose, onEditLocation, onPhotoU
           카카오맵으로 길찾기
         </button>
       </div>
+
+      {isRemovalOpen && <RemovalRequestModal key={area.id} area={area} onClose={() => setIsRemovalOpen(false)} />}
 
       {/* 사진 업로드 전용 모달 */}
       <PhotoUploadModal
